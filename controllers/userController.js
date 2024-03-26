@@ -271,7 +271,7 @@ module.exports = {
               }
               db.end();
             });
-            return res.redirect("/Paciente/Logout");
+            return res.redirect("/Paciente");
           }
         );
       });
@@ -327,7 +327,7 @@ module.exports = {
           idUsuario: _idUs,
           cedula: req.body.Cedula,
         };
-        var insertDatN = ["Nutriologo", datN];
+        var insertDatN = ["nutriologo", datN];
         db.query(sql, insertDatN, (error, results2, fields) => {
           if (error) {
             return db.rollback(() => {
@@ -403,7 +403,7 @@ module.exports = {
   postRegCita: (req, res, next) => {
     console.log(req.body);
     var _idPaciente = req.body.idPaciente;
-    var sql = "insert into Cita set?";
+    var sql = "insert into cita set?";
     var sql2 = "select * from paciente where idPaciente =?";
     var fechaHora = req.body.fechaHora;
     var fh;
@@ -507,7 +507,7 @@ module.exports = {
   getRegAli: (req, res, next) => {
     var sql = "select * from tipoAli";
     var sql2 =
-      "select Alimentos.nombreA, Alimentos.descri, tipoAli.descTiA, cantidades.* from ((alimentos inner join tipoAli on alimentos.idTipoA = tipoAli.idTipoA) inner join cantidades on alimentos.idCant = cantidades.idCant);";
+      "select alimentos.nombreA, alimentos.descri, tipoAli.descTiA, cantidades.* from ((alimentos inner join tipoAli on alimentos.idTipoA = tipoAli.idTipoA) inner join cantidades on alimentos.idCant = cantidades.idCant);";
     var config = require(".././database/config");
 
     var db = mysql.createConnection(config);
@@ -564,7 +564,7 @@ module.exports = {
     };
     var descriA = req.body.desc;
 
-    var insertCant = ["Cantidades", datCant];
+    var insertCant = ["cantidades", datCant];
 
     var config = require(".././database/config");
 
@@ -607,7 +607,7 @@ module.exports = {
             idCant: idCant,
             descri: descriA,
           };
-          var insertAli = ["Alimentos", datAli];
+          var insertAli = ["alimentos", datAli];
 
           db.query(sql, insertAli, (error3, results3, fields) => {
             if (error3) {
@@ -663,7 +663,7 @@ module.exports = {
   getAli: (req, res, next) => {
     const { id } = req.params;
     var sql =
-      "select Alimentos.nombreA, Alimentos.descri, tipoAli.descTiA, cantidades.* from ((alimentos inner join tipoAli on alimentos.idTipoA = tipoAli.idTipoA) inner join cantidades on alimentos.idCant = cantidades.idCant) where alimentos.idTipoA =?";
+      "select alimentos.nombreA, alimentos.descri, tipoAli.descTiA, cantidades.* from ((alimentos inner join tipoAli on alimentos.idTipoA = tipoAli.idTipoA) inner join cantidades on alimentos.idCant = cantidades.idCant) where alimentos.idTipoA =?";
     var config = require(".././database/config");
 
     var db = mysql.createConnection(config);
