@@ -25,7 +25,7 @@ router.get("/Paciente/Logout", controllers.userController.logout);
 router.get(
   "/Paciente",
   AuthMiddleware.isLoggedAsP,
-  controllers.userController.getUserPanel
+  controllers.userController.getUserPanel,
 );
 router.get(
   "/PacienteCitas",

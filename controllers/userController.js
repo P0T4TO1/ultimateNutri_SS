@@ -148,6 +148,7 @@ module.exports = {
         return res.render("paciente/panel", {
           isAuthenticated: req.isAuthenticated(),
           user: req.user,
+          datP: datP,
           title: "Home Paciente",
         });
       }
@@ -164,6 +165,7 @@ module.exports = {
     res.render("nutri/panelN", {
       isAuthenticated: req.isAuthenticated(),
       user: req.user,
+      datP: {},
       title: "Home Nutriologo",
     });
   },
@@ -181,6 +183,7 @@ module.exports = {
       }
     }
   },
+
   calcula: (req, res, next) => {
     var sql =
       "select paciente.idPaciente, usuario.fechaCumple, usuario.sexo, datPaciente.* from ((usuario inner join paciente on usuario.idUsuario = paciente.idUsuario) inner join datPaciente on paciente.idDatP = datPaciente.idDatP) where usuario.idUsuario =?";
@@ -390,6 +393,7 @@ module.exports = {
         return res.render("nutri/citas", {
           isAuthenticated: req.isAuthenticated(),
           user: req.user,
+          datP: {},
           title: "Citas",
           pacientes: results,
           citas: results2,
@@ -476,6 +480,8 @@ module.exports = {
       "select cita.idCita, usuario.nombre, usuario.apellidoP, usuario.email, cita.fechaHora from ((cita inner join nutriologo on cita.idNutri = nutriologo.idNutri) inner join usuario on nutriologo.idUsuario = usuario.idUsuario) where cita.idPaciente =?";
     var _idPaciente = req.user.idPa;
     var config = require(".././database/config");
+    var idDatP = req.user.idDatP;
+    var sql2 = "select * from datPaciente where idDatP =?";
 
     var db = mysql.createConnection(config);
 
@@ -486,6 +492,15 @@ module.exports = {
         console.log("Éxito");
       }
     });
+    var datP = db.query(sql2, idDatP, (err, rows, fields) => {
+      if (err) {
+        return db.rollback(() => {
+          throw err;
+        });
+      }
+      var _datP = rows[0];
+      return _datP;
+    });
 
     db.query(sql, _idPaciente, (err, rows, fields) => {
       if (err) {
@@ -493,11 +508,13 @@ module.exports = {
           throw err;
         });
       }
+      var _datP = datP._rows[0][0];
       db.end();
       console.log(rows);
       return res.render("paciente/citasP", {
         isAuthenticated: req.isAuthenticated(),
         user: req.user,
+        datP: _datP,
         title: "Citas",
         citas: rows,
       });
@@ -538,6 +555,7 @@ module.exports = {
         return res.render("nutri/registraA", {
           isAuthenticated: req.isAuthenticated(),
           user: req.user,
+          datP: {},
           title: "Alimentos",
           tipoAli: rows,
           alimentos: rows2,
@@ -630,11 +648,12 @@ module.exports = {
       });
     });
   },
-  getVerTA: (req, res, next) => {
+  getVerTA: async (req, res, next) => {
     var sql = "select * from tipoAli";
     var config = require(".././database/config");
-
     var db = mysql.createConnection(config);
+    var idDatP = req.user?.idDatP;
+    var sql2 = "select * from datPaciente where idDatP = ?";
 
     db.connect((error) => {
       if (error) {
@@ -644,16 +663,32 @@ module.exports = {
       }
     });
 
+    var datP = db.query(sql2, idDatP, (err, rows, fields) => {
+      if (err) {
+        return db.rollback(() => {
+          console.log(err);
+        });
+      }
+      var _datP = rows[0];
+      return _datP;
+    });
+
     db.query(sql, (err, rows, fields) => {
       if (err) {
         return db.rollback(() => {
           throw err;
         });
       }
+      try {
+        var _datP = datP?._rows[0][0] || {};
+      } catch (error) {
+        console.log(error);
+      }
       db.end();
       return res.render("alimentosGallery", {
         isAuthenticated: req.isAuthenticated(),
         user: req.user,
+        datP: _datP || {},
         title: "Tipos de Alimentos",
         tipoAli: rows,
       });
@@ -665,6 +700,8 @@ module.exports = {
     var sql =
       "select alimentos.nombreA, alimentos.descri, tipoAli.descTiA, cantidades.* from ((alimentos inner join tipoAli on alimentos.idTipoA = tipoAli.idTipoA) inner join cantidades on alimentos.idCant = cantidades.idCant) where alimentos.idTipoA =?";
     var config = require(".././database/config");
+    var idDatP = req.user?.idDatP;
+    var sql2 = "select * from datPaciente where idDatP = ?";
 
     var db = mysql.createConnection(config);
 
@@ -675,16 +712,32 @@ module.exports = {
         console.log("Éxito");
       }
     });
+    var datP = db.query(sql2, idDatP, (err, rows, fields) => {
+      if (err) {
+        return db.rollback(() => {
+          console.log(err);
+        });
+      }
+      var _datP = rows[0];
+      return _datP;
+    });
+
     db.query(sql, [id], (err, rows) => {
       if (err) {
         return db.rollback(() => {
           throw err;
         });
       }
+      try {
+        var _datP = datP?._rows[0][0] || {};
+      } catch (error) {
+        console.log(error);
+      }
       db.end();
       return res.render("alimentos", {
         isAuthenticated: req.isAuthenticated(),
         user: req.user,
+        datP: _datP || {},
         title: "Alimentos",
         alimentos: rows,
       });
@@ -694,7 +747,9 @@ module.exports = {
   getUpdateP: (req, res, next) => {
     console.log(req);
     var idU = req.user.idU;
+    var idDatP = req.user.idDatP;
     var sql = "select * from usuario where idUsuario=?";
+    var sql2 = "select * from datPaciente where idDatP=?";
 
     var config = require(".././database/config");
 
@@ -707,6 +762,15 @@ module.exports = {
         console.log("Éxito");
       }
     });
+    var datP = db.query(sql2, idDatP, (err, rows, fields) => {
+      if (err) {
+        return db.rollback(() => {
+          throw err;
+        });
+      }
+      var _datP = rows[0];
+      return _datP;
+    });
 
     db.query(sql, idU, (err, rows, fields) => {
       if (err) {
@@ -714,12 +778,13 @@ module.exports = {
           throw err;
         });
       }
+      var _datP = datP._rows[0][0];
       db.end();
       var _pacient = rows[0];
-      console.log(_pacient);
       return res.render("paciente/update", {
         isAuthenticated: req.isAuthenticated(),
         user: req.user,
+        datP: _datP,
         title: "Actualizar Datos",
         pacient: _pacient,
       });
